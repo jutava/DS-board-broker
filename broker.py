@@ -29,9 +29,10 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(b'POST succeeded')
 
     def do_GET(self):
-        vars = (urlparse(self.path).query)
-        print("GET request received", self.path,"with params:", vars,"From:", self.client_address)
-        board = get_board(1)
+        state = (urlparse(self.path).query)
+        print("GET request received", self.path,"with params:", state,"From:", self.client_address)
+        board = get_board(state)
+        global latest_state # DO THIS PART
         self._set_get_response(board)
 
     def do_POST(self):
@@ -54,7 +55,6 @@ def receive_post_from_client(message):
                 mutex = False
                 return 200 #OK
             else:
-                print("CONFLICT")
                 return 409 #Conflict
         else:
             return get_board(message["state"])
