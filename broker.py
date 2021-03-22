@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 #########
 #VARIABLES:
@@ -29,10 +29,10 @@ class MyServer(BaseHTTPRequestHandler):
         self.wfile.write(b'POST succeeded')
 
     def do_GET(self):
-        state = (urlparse(self.path).query)
+        state = int(parse_qs(urlparse(self.path).query)["state"][0])
         print("GET request received", self.path,"with params:", state,"From:", self.client_address)
         board = get_board(state)
-        global latest_state # DO THIS PART
+        update_latest_state(board)
         self._set_get_response(board)
 
     def do_POST(self):
@@ -57,29 +57,36 @@ def receive_post_from_client(message):
             else:
                 return 409 #Conflict
         else:
-            return get_board(message["state"])
+            return 403 #Forbidden
     else:
         return 401 #Unauthorized
         
 
 # Send request to server to get board status
-def get_board(state):   
-    r = requests.get(url = ServerURL)
+def get_board(state):
+    payload = {"state":state}
+    r = requests.get(url = ServerURL, params=payload)
     print("GET returned:", r.text)
     return r.text
 
 def update_board(message):
     print("Sending post request to:", ServerURL)
-    r = requests.post(url = ServerURL, data = message)
-    return r.text
+    r = requests.post(url = ServerURL, data=json.dumps(message))
+    return r.status_code
 
 # Ensure that request is coming from application
 def authenticate_user():
     return True
+    
+def update_latest_state(board)
+    global latest_state
+    state = board["state"]
+    if state > latest_state:
+        latest_state = state
 
 if __name__ == "__main__":        
     webServer = HTTPServer((hostName, serverPort), MyServer)
-    print("Server started http://%s:%s" % (hostName, serverPort))
+    print("Broker started at http://%s:%s" % (hostName, serverPort))
 
     webServer.serve_forever()
 
