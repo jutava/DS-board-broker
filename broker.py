@@ -32,7 +32,7 @@ class MyServer(BaseHTTPRequestHandler):
         state = int(parse_qs(urlparse(self.path).query)["state"][0])
         print("GET request received", self.path,"with params:", state,"From:", self.client_address)
         board = get_board(state)
-        # update_latest_state(board)
+        update_latest_state(board)
         self._set_get_response(board)
 
     def do_POST(self):
@@ -48,16 +48,16 @@ def receive_post_from_client(message):
     global mutex
     if authenticate_user():
         print("State is:", message["state"])
-        # if message["state"] is latest_state:
-        if not mutex:
-            mutex = True
-            update_board(message)
-            mutex = False
-            return 200 #OK
+        if message["state"] is latest_state:
+            if not mutex:
+                mutex = True
+                update_board(message)
+                mutex = False
+                return 200 #OK
+            else:
+                return 409 #Conflict
         else:
-            return 409 #Conflict
-        # else:
-        #     return 403 #Forbidden
+            return 403 #Forbidden
     else:
         return 401 #Unauthorized
         
@@ -74,17 +74,23 @@ def update_board(message):
     r = requests.post(url = ServerURL, data=json.dumps(message))
     return r.status_code
 
-# Ensure that request is coming from application
 def authenticate_user():
     return True
     
 def update_latest_state(board):
-    global latest_state
-    state = board["state"]
-    if state > latest_state:
-        latest_state = state
+    if board = {}:
+        pass
+    else:
+        global latest_state
+        length = len(list(board.keys()))
+        if max(list(board.keys()))[0] = "is_whole_board":
+            state = int(list(board.keys())[length - 2]
+        else 
+            state = int(list(board.keys())[length - 1])
+        if state > latest_state:
+            latest_state = state
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
     webServer = HTTPServer((hostName, serverPort), MyServer)
     print("Broker started at http://%s:%s" % (hostName, serverPort))
 
