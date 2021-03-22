@@ -1,1 +1,1 @@
-I am the broker node
+python3 broker.py
