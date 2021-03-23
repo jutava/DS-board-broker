@@ -45,8 +45,9 @@ class MyServer(BaseHTTPRequestHandler):
 # Process request from client
 def receive_post_from_client(message):
     global mutex
+    global latest_state
     if authenticate_user():
-        print("State is:", message["state"])
+        print("Client state:", message["state"], "Latest state:", latest_state)
         if message["state"] >= latest_state:
             if not mutex:
                 mutex = True
@@ -71,6 +72,8 @@ def get_board(state):
 def update_board(message):
     print("Sending post request to:", ServerURL)
     r = requests.post(url = ServerURL, data=json.dumps(message))
+    global latest_state
+    latest_state += 1
     return r.status_code
 
 def authenticate_user():
@@ -80,11 +83,7 @@ def update_latest_state(board):
     if not board:
         global latest_state
         board = json.loads(board)
-        l_board = list(board.keys())
-        length = len(l_board)
-        
-        print("Board:",board)
-        
+
         if "is_whole_board" in board:
             del board["is_whole_board"]
 
