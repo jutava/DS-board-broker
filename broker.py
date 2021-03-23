@@ -78,15 +78,24 @@ def authenticate_user():
     return True
     
 def update_latest_state(board):
-    if board = {}:
+    if board == {}:
         pass
     else:
         global latest_state
-        length = len(list(board.keys()))
-        if max(list(board.keys()))[0] = "is_whole_board":
-            state = int(list(board.keys())[length - 2]
-        else 
-            state = int(list(board.keys())[length - 1])
+        board = json.loads(board)
+        l_board = list(board.keys())
+        length = len(l_board)
+        
+        if "is_whole_board" in board:
+            state = int(list(board.keys())[length - 2])
+        else:
+            state = int(list(board.keys())[length - 1]) 
+
+        # if max(list(board.keys()))[0] == "is_whole_board":
+        #     state = int(list(board.keys())[length - 2])
+        # else:
+        #     state = int(list(board.keys())[length - 1])
+
         if state > latest_state:
             latest_state = state
 
