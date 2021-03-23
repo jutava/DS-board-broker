@@ -13,11 +13,11 @@ ServerURL = "http://localhost:8079"
 ##########
 
 mutex = False
-latest_state = 1
+latest_state = 0
 
 class MyServer(BaseHTTPRequestHandler):
     def _set_get_response(self, board):
-        self.send_response(200, message=board)
+        self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(json.dumps(board).encode('utf_8'))
@@ -26,7 +26,6 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(b'POST succeeded')
 
     def do_GET(self):
         state = int(parse_qs(urlparse(self.path).query)["state"][0])
@@ -48,7 +47,7 @@ def receive_post_from_client(message):
     global mutex
     if authenticate_user():
         print("State is:", message["state"])
-        if message["state"] > latest_state:
+        if message["state"] >= latest_state:
             if not mutex:
                 mutex = True
                 update_board(message)
@@ -78,24 +77,19 @@ def authenticate_user():
     return True
     
 def update_latest_state(board):
-    if board == {}:
-        pass
-    else:
+    if not board:
         global latest_state
         board = json.loads(board)
         l_board = list(board.keys())
         length = len(l_board)
         
+        print("Board:",board)
+        
         if "is_whole_board" in board:
-            state = int(list(board.keys())[length - 2])
-        else:
-            state = int(list(board.keys())[length - 1]) 
+            del board["is_whole_board"]
 
-        # if max(list(board.keys()))[0] == "is_whole_board":
-        #     state = int(list(board.keys())[length - 2])
-        # else:
-        #     state = int(list(board.keys())[length - 1])
-
+        state = int(max(list(board.keys())))
+         
         if state > latest_state:
             latest_state = state
 
