@@ -48,7 +48,7 @@ def receive_post_from_client(message):
     global mutex
     if authenticate_user():
         print("State is:", message["state"])
-        if message["state"] is latest_state:
+        if message["state"] > latest_state:
             if not mutex:
                 mutex = True
                 update_board(message)
